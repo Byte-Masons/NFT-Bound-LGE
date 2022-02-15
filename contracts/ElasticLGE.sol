@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.10;
 
-import "./Math.sol";
+import "./OZ/utils/math/Math.sol";
 import "./OZ/token/ERC20/IERC20.sol";
 import "./OZ/access/Ownable.sol";
 import "./OZ/token/ERC721/IERC721.sol";
@@ -112,7 +112,7 @@ contract ElasticFundraising is Ownable {
     uint perShare;
     for (uint i = 0; i < NFTs.length; i++) {
       (uint available, uint _perShare, uint _total) = getPricingData(NFTs[i], indicies[i]);
-      uint amount = available > remaining ? available : remaining;
+      uint amount = Math.min(remaining, available);
       remaining -= amount;
       if (perShare == 0) {
         perShare += _perShare;
@@ -135,8 +135,9 @@ contract ElasticFundraising is Ownable {
     uint term;
     for (uint i = 0; i < NFTs.length; i++) {
       (uint available,,) = getPricingData(NFTs[i], indicies[i]);
-      uint amount = available > remaining ? available : remaining;
-      term = getUpdatedTerms(currentShares, term, amount, licenses[NFTs[i]].term);
+      uint amount = Math.min(remaining, available);
+      uint _term = licenses[NFTs[i]].term;
+      term = getUpdatedTerms(currentShares, term, amount, _term);
       remaining -= amount;
       currentShares += amount;
       totalShares += amount;
