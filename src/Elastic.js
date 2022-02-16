@@ -123,3 +123,19 @@ async function assembleEnvironment(accounts) {
   let wallets = createNewWallets(100);
 
 }
+
+module.exports {
+  deployLGE,
+  viewState,
+  viewLicense,
+  viewTerms,
+  viewAllocation,
+  buy,
+  batchPurchase,
+  getBatchPricing,
+  getBatchTerms,
+  getPricingData,
+  getUpdatedTerms,
+  addLicense,
+  assembleEnvironment
+}
