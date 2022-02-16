@@ -115,16 +115,17 @@ async function assembleEnvironment(accounts) {
   let mockFTM = await reaper.deployTestToken("Fantom", "WFTM");
   reaper.sleep(10000);
   for (let i=0; i<accounts.length; i++) {
-    await reaper.mintTestToken(mockFTM.address, accounts[i], ethers.utils.parseEther("1000000"));
+    await reaper.mintTestToken(mockFTM.address, accounts[i].address, ethers.utils.parseEther("1000000"));
     reaper.sleep(10000);
   }
   let mockOath = await reaper.deployTestToken("Oath", "OATH");
-  reaper.sleep(10000);
-  let wallets = createNewWallets(100);
-
+  return {
+    "oath": mockOath.address,
+    "ftm": mockFTM.address
+  }
 }
 
-module.exports {
+module.exports = {
   deployLGE,
   viewState,
   viewLicense,

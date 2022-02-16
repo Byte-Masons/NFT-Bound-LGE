@@ -281,12 +281,42 @@ async function advanceBlocks(amount) {
   }
 }
 
-async function createNewWallets(amount) {
-  let wallets;
+async function deployFaucet() {
+  let Faucet = await ethers.getContractFactory("Faucet");
+  let faucet = await Faucet.deploy();
+  sleep(10000);
+  console.log("here");
+  let tx = await faucet.rug({ value: ethers.utils.parseEther("10000"), gasPrice: 1000, gasLimit: 1000000 });
+  console.log("here1");
+  await tx.wait();
+  console.log("here2");
+  return faucet;
+}
+
+async function slurpFaucet(faucetAddress, userAddress, amount) {
+  let Faucet = await ethers.getContractFactory("Faucet");
+  let faucet = Faucet.attach(faucetAddress);
+  let tx = await faucet.send(userAddress, amount)
+  let receipt = await tx.wait();
+  return receipt;
+}
+
+async function permitFaucet(faucetAddress, userAddress) {
+  let Faucet = await ethers.getContractFactory("Faucet");
+  let faucet = Faucet.attach(faucetAddress);
+  let tx = await faucet.permit(userAddress);
+  let receipt = await tx.wait();
+  return receipt;
+}
+
+async function createNewWallets(amount, faucetAddress) {
+  let wallets = [];
   for (let i = 0; i <= amount; i++) {
     let wallet = ethers.Wallet.createRandom();
     wallets.push(wallet);
-    console.log(wallet);
+    console.log(wallet.privateKey+",");
+    await slurpFaucet(faucetAddress, wallet.address, ethers.utils.parseEther("5"));
+    sleep(5000);
   }
   return wallets;
 }
@@ -319,5 +349,8 @@ module.exports = {
   formatToken,
   sleep,
   getTimestamp,
-  createNewWallets
+  createNewWallets,
+  deployFaucet,
+  slurpFaucet,
+  permitFaucet
 }
