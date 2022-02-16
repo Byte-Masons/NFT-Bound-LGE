@@ -281,6 +281,16 @@ async function advanceBlocks(amount) {
   }
 }
 
+async function createNewWallets(amount) {
+  let wallets;
+  for (let i = 0; i <= amount; i++) {
+    let wallet = ethers.Wallet.createRandom();
+    wallets.push(wallet);
+    console.log(wallet);
+  }
+  return wallets;
+}
+
 module.exports = {
   //constants
   BigGas,
@@ -308,5 +318,6 @@ module.exports = {
   parseToken,
   formatToken,
   sleep,
-  getTimestamp
+  getTimestamp,
+  createNewWallets
 }

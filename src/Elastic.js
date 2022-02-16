@@ -111,8 +111,6 @@ async function addLicense(lgeAddress, threshold, limit, term) {
   return receipt;
 }
 
-
-
 async function assembleEnvironment(accounts) {
   let mockFTM = await reaper.deployTestToken("Fantom", "WFTM");
   reaper.sleep(10000);
@@ -122,4 +120,6 @@ async function assembleEnvironment(accounts) {
   }
   let mockOath = await reaper.deployTestToken("Oath", "OATH");
   reaper.sleep(10000);
+  let wallets = createNewWallets(100);
+
 }
