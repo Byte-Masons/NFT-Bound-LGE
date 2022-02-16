@@ -1,4 +1,4 @@
-//SPDX license identifier: MIT
+//SPDX-License-Identifier: MIT
 
 pragma solidity 0.8.10;
 
@@ -6,17 +6,22 @@ import "./OZ/utils/math/Math.sol";
 import "./OZ/token/ERC20/IERC20.sol";
 import "./OZ/access/Ownable.sol";
 import "./OZ/token/ERC721/IERC721.sol";
+import "./TestERC20.sol";
 
-contract ElasticFundraising is Ownable {
+interface IOath {
+  function mint(address to, uint amount) external returns (bool);
+}
+
+contract ElasticLGE is Ownable {
   using Math for uint;
 
   uint public BASIS_POINTS = 10000;
 
-  IERC20 public oath;
+  IOath public oath;
   IERC20 public counterAsset;
 
   uint public raised;
-  uint public totalShares;
+  uint public shareSupply;
   uint public totalOath;
   uint public defaultTerm = 90 days;
   uint public defaultPrice = 1e18;
@@ -53,7 +58,7 @@ contract ElasticFundraising is Ownable {
     uint _beginning,
     uint _end
   ) {
-    oath = IERC20(_oath);
+    oath = IOath(_oath);
     counterAsset = IERC20(_counterAsset);
     beginning = _beginning;
     end = _end;
@@ -84,7 +89,7 @@ contract ElasticFundraising is Ownable {
     uint cost = amount * licenses[NFT].price / BASIS_POINTS;
     counterAsset.transferFrom(msg.sender, address(this), cost);
     _updateTerms(amount, licenses[NFT].term);
-    totalShares += amount;
+    shareSupply += amount;
     raised += cost;
     return true;
   }
@@ -93,7 +98,7 @@ contract ElasticFundraising is Ownable {
     uint cost = amount * defaultPrice;
     counterAsset.transferFrom(msg.sender, address(this), cost);
     _updateTerms(amount, defaultTerm);
-    totalShares += amount;
+    shareSupply += amount;
     raised += cost;
     return true;
   }
@@ -111,6 +116,7 @@ contract ElasticFundraising is Ownable {
       buy(remaining, address(0), 0);
       return true;
     }
+    return true;
   }
 
   function claim() external returns (bool) {
@@ -124,15 +130,14 @@ contract ElasticFundraising is Ownable {
   }
 
   function _totalOwed() internal view returns (uint) {
-    return (totalOath * terms[msg.sender].shares / totalShares);
+    return (totalOath * terms[msg.sender].shares / shareSupply);
   }
 
   //per share and total
   function getBatchPricing(uint totalAmount, address[] calldata NFTs, uint[] calldata indicies) public view returns (uint perShare, uint totalCost, uint totalShares) {
     uint remaining = totalAmount;
-    uint perShare;
     for (uint i = 0; i < NFTs.length; i++) {
-      (uint available, uint _perShare, uint _total) = getPricingData(NFTs[i], indicies[i]);
+      (uint available, uint _perShare,) = getPricingData(NFTs[i], indicies[i]);
       uint amount = Math.min(remaining, available);
       remaining -= amount;
       if (perShare == 0) {
@@ -153,7 +158,6 @@ contract ElasticFundraising is Ownable {
   function getBatchTerms(address user, uint totalShares, address[] calldata NFTs, uint[] calldata indicies) public view returns (uint term) {
     uint remaining = totalShares;
     uint currentShares = terms[user].shares;
-    uint term;
     for (uint i = 0; i < NFTs.length; i++) {
       (uint available,,) = getPricingData(NFTs[i], indicies[i]);
       uint amount = Math.min(remaining, available);
@@ -180,7 +184,7 @@ contract ElasticFundraising is Ownable {
     total = available * perShare;
   }
 
-  function getUpdatedTerms(uint oldShares, uint oldTerm, uint newShares, uint newTerm) public view returns (uint term) {
+  function getUpdatedTerms(uint oldShares, uint oldTerm, uint newShares, uint newTerm) public pure returns (uint term) {
     if (oldShares == 0) {
       term = newTerm;
     } else {
