@@ -17,8 +17,12 @@ contract ElasticFundraising is Ownable {
 
   uint public raised;
   uint public totalShares;
+  uint public totalOath;
   uint public defaultTerm = 90 days;
   uint public defaultPrice = 1e18;
+
+  uint public beginning;
+  uint public end;
 
   // price:: 9000 = 90.00% of full value
   // limit:: the maximum amount that can be purchased from the NFT
@@ -41,15 +45,18 @@ contract ElasticFundraising is Ownable {
   mapping(address => License) public licenses;
   mapping(address => mapping(uint => Allocation)) public allocations;
   mapping(address => Terms) public terms;
-
-  IERC721[] public supportedTokens;
+  mapping(address => uint) public claimed;
 
   constructor(
     address _oath,
-    address _counterAsset
+    address _counterAsset,
+    uint _beginning,
+    uint _end
   ) {
     oath = IERC20(_oath);
     counterAsset = IERC20(_counterAsset);
+    beginning = _beginning;
+    end = _end;
   }
 
   //shares out
@@ -104,6 +111,20 @@ contract ElasticFundraising is Ownable {
       buy(remaining, address(0), 0);
       return true;
     }
+  }
+
+  function claim() external returns (bool) {
+    require(claimed[msg.sender] < _totalOwed(), "you have no more tokens to claim");
+    uint perSecond = _totalOwed() / terms[msg.sender].term;
+    uint secondsClaimed = claimed[msg.sender] / perSecond;
+    uint lastClaim = end + secondsClaimed;
+    uint owed = block.timestamp - lastClaim * perSecond;
+    oath.mint(msg.sender, owed);
+    return true;
+  }
+
+  function _totalOwed() internal view returns (uint) {
+    return (totalOath * terms[msg.sender].shares / totalShares);
   }
 
   //per share and total
