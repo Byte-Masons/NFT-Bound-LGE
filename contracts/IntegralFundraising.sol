@@ -54,6 +54,7 @@ contract IntegralFundraising is Ownable {
   constructor(
     address _asset,
     address _counterAsset,
+    uint _startingAmount,
     uint _startPercent,
     uint _targetRaise,
     uint _tPrice,
@@ -66,11 +67,13 @@ contract IntegralFundraising is Ownable {
     targetRaise = _targetRaise;
     targetPrice = _tPrice;
     slope = _slope;
+    startingAmount = _startingAmount;
   }
 
   function buy(uint amount, address NFT, uint index) external returns (bool) {
     require(licenses[NFT].limit > 0, "buy: this NFT is not eligible for whitelist");
     require(getPrice() >= licenses[NFT].threshold, "buy: you cannot buy yet");
+    require(amount > 0, "invalid amount");
     _buy(amount, NFT, index);
     return true;
   }

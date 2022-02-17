@@ -7,6 +7,7 @@ import "./OZ/token/ERC20/IERC20.sol";
 import "./OZ/access/Ownable.sol";
 import "./OZ/token/ERC721/IERC721.sol";
 import "./TestERC20.sol";
+import "hardhat/console.sol";
 
 interface IOath {
   function mint(address to, uint amount) external returns (bool);
@@ -55,11 +56,13 @@ contract ElasticLGE is Ownable {
   constructor(
     address _oath,
     address _counterAsset,
+    uint _totalOath,
     uint _beginning,
     uint _end
   ) {
     oath = IOath(_oath);
     counterAsset = IERC20(_counterAsset);
+    totalOath = _totalOath;
     beginning = _beginning;
     end = _end;
   }
@@ -67,6 +70,7 @@ contract ElasticLGE is Ownable {
   //shares out
   function buy(uint amount, address NFT, uint index) public returns (bool) {
     require (amount > 0, "buy: please input amount");
+    require(block.timestamp >= beginning, "lge has not begun!");
     if(NFT == address(0)) {
       _buyDefault(amount);
     } else {
@@ -104,6 +108,7 @@ contract ElasticLGE is Ownable {
   }
 
   function batchPurchase(uint totalAmount, address[] calldata NFTs, uint[] calldata indicies) external returns (bool) {
+    require(NFTs.length == indicies.length, "array lengths do not match");
     uint remaining = totalAmount;
     for (uint i = 0; i < NFTs.length; i++) {
       (uint available,,) = getPricingData(NFTs[i], indicies[i]);
@@ -121,10 +126,12 @@ contract ElasticLGE is Ownable {
 
   function claim() external returns (bool) {
     require(claimed[msg.sender] < _totalOwed(), "you have no more tokens to claim");
+    require(block.timestamp >= end, "lge has not ended");
     uint perSecond = _totalOwed() / terms[msg.sender].term;
     uint secondsClaimed = claimed[msg.sender] / perSecond;
     uint lastClaim = end + secondsClaimed;
     uint owed = block.timestamp - lastClaim * perSecond;
+    claimed[msg.sender] += owed;
     oath.mint(msg.sender, owed);
     return true;
   }

@@ -1,9 +1,9 @@
 const tokens = require("../tokens.json");
 const reaper = require("./ReaperSDK.js");
 
-async function deployLGE(oath, counterAsset, beginning, end) {
+async function deployLGE(oath, counterAsset, totalOath, beginning, end) {
   let LGE = await ethers.getContractFactory("ElasticLGE");
-  let lge = await LGE.deploy(oath, counterAsset, beginning, end);
+  let lge = await LGE.deploy(oath, counterAsset, totalOath, beginning, end);
   return lge;
 }
 
@@ -12,15 +12,15 @@ async function viewState(lgeAddress) {
   let lge = await LGE.attach(lgeAddress);
   let oath = await lge.oath();
   let raised = await lge.raised();
-  let totalShares = await lge.totalShares();
+  let shareSupply = await lge.shareSupply();
   let defaultTerm = await lge.defaultTerm();
   let defaultPrice = await lge.defaultPrice();
   return {
     "oathAddress": oath,
-    "raised": raised,
-    "totalShares": totalShares,
-    "defaultTerm": defaultTerm,
-    "defaultPrice": defaultPrice
+    "raised": raised.toString(),
+    "shareSupply": shareSupply.toString(),
+    "defaultTerm": defaultTerm.toString(),
+    "defaultPrice": defaultPrice.toString()
   }
 }
 
@@ -29,9 +29,9 @@ async function viewLicense(lgeAddress, nftAddress) {
   let lge = await LGE.attach(lgeAddress);
   let license = await lge.licenses(nftAddress);
   return {
-    "price": license[0],
-    "limit": license[1],
-    "term": license[2]
+    "price": license[0].toString(),
+    "limit": license[1].toString(),
+    "term": license[2].toString()
   }
 }
 
@@ -40,8 +40,8 @@ async function viewTerms(lgeAddress, userAddress) {
   let lge = await LGE.attach(lgeAddress);
   let terms = await lge.terms(userAddress);
   return {
-    "shares": terms[0],
-    "term": terms[1]
+    "shares": terms[0].toString(),
+    "term": terms[1].toString()
   }
 }
 
@@ -50,7 +50,7 @@ async function viewAllocation(lgeAddress, nftAddress, nftIndex) {
   let lge = await LGE.attach(lgeAddress);
   let allocation = await lge.allocations(nftAddress, nftIndex);
   return {
-    "remaining": allocation[0],
+    "remaining": allocation[0].toString(),
     "activated": allocation[1]
   }
 }
@@ -66,7 +66,7 @@ async function buy(lgeAddress, amount, nft, index) {
 async function batchPurchase(lgeAddress, totalAmount, nftArray, indexArray) {
   let LGE = await ethers.getContractFactory("ElasticLGE");
   let lge = await LGE.attach(lgeAddress);
-  let tx = await lge.batchPurchase(totalAmmount, nftArray, indexArray);
+  let tx = await lge.batchPurchase(totalAmount, nftArray, indexArray);
   let receipt = await tx.wait();
   return receipt;
 }
@@ -74,7 +74,7 @@ async function batchPurchase(lgeAddress, totalAmount, nftArray, indexArray) {
 async function getBatchPricing(lgeAddress, totalAmount, nftArray, indexArray) {
   let LGE = await ethers.getContractFactory("ElasticLGE");
   let lge = await LGE.attach(lgeAddress);
-  let tx = await lge.getBatchPricing(totalAmmount, nftArray, indexArray);
+  let tx = await lge.getBatchPricing(totalAmount, nftArray, indexArray);
   let receipt = await tx.wait();
   return receipt;
 }
@@ -103,10 +103,10 @@ async function getUpdatedTerms(lgeAddress, oldShares, oldTerm, newShares, newTer
   return receipt;
 }
 
-async function addLicense(lgeAddress, threshold, limit, term) {
+async function addLicense(lgeAddress, nftAddress, price, limit, term) {
   let LGE = await ethers.getContractFactory("ElasticLGE");
   let lge = await LGE.attach(lgeAddress);
-  let tx = await lge.addLicense(lgeAddress, threshold, limit, term);
+  let tx = await lge.addLicense(nftAddress, price, limit, term);
   let receipt = await tx.wait();
   return receipt;
 }
@@ -120,9 +120,23 @@ async function assembleEnvironment(accounts) {
   }
   let mockOath = await reaper.deployTestToken("Oath", "OATH");
   return {
-    "oath": mockOath.address,
-    "ftm": mockFTM.address
+    "oath": mockOath,
+    "ftm": mockFTM
   }
+}
+
+async function deployTestNFT(name, symbol) {
+  let NFT = await ethers.getContractFactory("TestERC721");
+  let nft = await NFT.deploy(name, symbol);
+  return nft;
+}
+
+async function mintTestNFT(nftAddress, userAddress) {
+  let NFT = await ethers.getContractFactory("TestERC721");
+  let nft = await NFT.attach(nftAddress);
+  let tx = await nft.mint(userAddress);
+  let receipt = await tx.wait();
+  return receipt;
 }
 
 module.exports = {
@@ -138,5 +152,7 @@ module.exports = {
   getPricingData,
   getUpdatedTerms,
   addLicense,
-  assembleEnvironment
+  assembleEnvironment,
+  deployTestNFT,
+  mintTestNFT
 }
