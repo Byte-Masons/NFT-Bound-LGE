@@ -258,6 +258,8 @@ contract ElasticLGE is Ownable {
   // oldValue:: current amount of x
   // weightedNew:: new amount of y being added to weighted average
   // weightedOld:: current weighted average of y
+
+  //NOTE: this function was all kind of fucked and i got it working pretty late. will make it prettier tomorrow. docs are inaccurate.
   function findWeightedAverage(
     uint addedValue,
     uint oldValue,
@@ -269,16 +271,21 @@ contract ElasticLGE is Ownable {
     if (oldValue == 0) {
       weightedAverage = weightedNew;
     } else {
-      uint total = addedValue + oldValue;
-      uint sum = weightNew + weightOld;
-      weightedAverage = total / sum / BASIS_POINTS;
-      /*
-      uint weightNew = (addedValue * 1e18 / oldValue);
-      uint weightOld = (oldValue * 1e18 / addedValue);
-      uint combined = weightNew + weightOld;
-      uint sumEach = (weightedNew * weightNew) + (weightedOld * weightOld);
-      weightedAverage = sumEach / combined;
-      */
+      uint weightNew;
+      uint weightOld;
+      if (weightNew < weightOld) {
+        weightNew = addedValue * BASIS_POINTS / oldValue;
+        weightOld = 10000 - weightNew;
+      } else if (weightOld < weightNew) {
+        weightOld = oldValue * BASIS_POINTS / addedValue;
+        weightNew = 10000 - weightOld;
+      } else {
+        weightNew = 10000;
+        weightOld = 10000;
+      }
+      uint a = weightedNew * weightNew / BASIS_POINTS;
+      uint b = weightedOld * weightOld / BASIS_POINTS;
+      weightedAverage = a + b;
     }
   }
 

@@ -55,36 +55,38 @@ async function viewAllocation(lgeAddress, nftAddress, nftIndex) {
   }
 }
 
-async function buy(lgeAddress, amount, nft, index) {
+async function buy(lgeAddress, amount, nft, index, venture) {
   let LGE = await ethers.getContractFactory("ElasticLGE");
   let lge = await LGE.attach(lgeAddress);
-  let tx = await lge.buy(amount, nft, index);
+  let tx = await lge.buy(amount, nft, index, venture);
   let receipt = await tx.wait();
   return receipt;
 }
 
-async function batchPurchase(lgeAddress, totalAmount, nftArray, indexArray) {
+async function batchPurchase(lgeAddress, totalAmount, nftArray, indexArray, venture) {
   let LGE = await ethers.getContractFactory("ElasticLGE");
   let lge = await LGE.attach(lgeAddress);
-  let tx = await lge.batchPurchase(totalAmount, nftArray, indexArray);
+  let tx = await lge.batchPurchase(totalAmount, nftArray, indexArray, venture);
   let receipt = await tx.wait();
   return receipt;
 }
 
-async function getBatchPricing(lgeAddress, totalAmount, nftArray, indexArray) {
+async function getBatchPricing(lgeAddress, nftArray, indexArray) {
   let LGE = await ethers.getContractFactory("ElasticLGE");
   let lge = await LGE.attach(lgeAddress);
-  let tx = await lge.getBatchPricing(totalAmount, nftArray, indexArray);
-  let receipt = await tx.wait();
-  return receipt;
+  let prices = await lge.getBatchPricing(nftArray, indexArray);
+  return {
+    "perShare": prices[0].toString(),
+    "totalCost": prices[1].toString(),
+    "totalShares": prices[2].toString()
+  }
 }
 
-async function getBatchTerms(lgeAddress, userAddress, totalShares, nftArray, indexArray) {
+async function getBatchTerms(lgeAddress, nftArray, indexArray) {
   let LGE = await ethers.getContractFactory("ElasticLGE");
   let lge = await LGE.attach(lgeAddress);
-  let tx = await lge.getBatchTerms(userAddress, totalShares, nftArray, indexArray);
-  let receipt = await tx.wait();
-  return receipt;
+  let term = await lge.getBatchTerms(nftArray, indexArray);
+  return term.toString();
 }
 
 async function getPricingData(lgeAddress, nftAddress, index) {
@@ -113,15 +115,27 @@ async function addLicense(lgeAddress, nftAddress, price, limit, term) {
 
 async function assembleEnvironment(accounts) {
   let mockFTM = await reaper.deployTestToken("Fantom", "WFTM");
+  let enft = await deployTestNFT("Epic NFT", "eNFT");
+  let lnft = await deployTestNFT("Lame NFT", "lNFT");
   reaper.sleep(10000);
   for (let i=0; i<accounts.length; i++) {
     await reaper.mintTestToken(mockFTM.address, accounts[i].address, ethers.utils.parseEther("1000000"));
     reaper.sleep(10000);
   }
   let mockOath = await reaper.deployTestToken("Oath", "OATH");
+  let lge = await deployLGE(
+    mockOath.address,
+    mockFTM.address,
+    ethers.utils.parseEther("80000000"),
+    await reaper.getTimestamp(),
+    await reaper.getTimestamp() + 10000
+  );
   return {
     "oath": mockOath,
-    "ftm": mockFTM
+    "ftm": mockFTM,
+    "enft": enft,
+    "lnft": lnft,
+    "lge": lge
   }
 }
 
@@ -139,6 +153,13 @@ async function mintTestNFT(nftAddress, userAddress) {
   return receipt;
 }
 
+async function findOwner(nftAddress, id) {
+  let NFT = await ethers.getContractFactory("TestERC721");
+  let nft = await NFT.attach(nftAddress);
+  let owner = await nft.ownerOf(id);
+  return owner;
+}
+
 module.exports = {
   deployLGE,
   viewState,
@@ -154,5 +175,6 @@ module.exports = {
   addLicense,
   assembleEnvironment,
   deployTestNFT,
-  mintTestNFT
+  mintTestNFT,
+  findOwner
 }

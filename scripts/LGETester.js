@@ -3,10 +3,72 @@ const elastic = require("../src/Elastic.js");
 
 async function main() {
 
+  async function loadWallets(pkeyArray) {
+    let wallets = [];
+    for (let i=0; i<pkeyArray.length; i++) {
+      let wallet = new ethers.Wallet(pkeyArray[i]);
+      wallets.push(wallet);
+    }
+    return wallets;
+  }
+
+  async function license() {
+    await elastic.addLicense(lge, enft, 5000, 100, 100000);
+    await elastic.addLicense(lge, lnft, 7500, 200, 50000);
+    let license = await elastic.viewLicense(lge, enft);
+    console.log(">>>EPIC NFT<<<");
+    console.log(license);
+    license = await elastic.viewLicense(lge, lnft);
+    console.log(">>>LAME NFT<<<");
+    console.log(license);
+  }
+
+  async function logState() {
+    let state = await elastic.viewState(lge);
+    console.log(state);
+  }
+
+  async function createEnvironment() {
+    let wallets = await loadWallets(pkeys);
+    let env = await elastic.assembleEnvironment(wallets);
+    console.log("let oath = " +env.oath.address + ";");
+    console.log("let ftm = " +env.ftm.address + ";");
+    console.log("let enft = " +env.enft.address + ";");
+    console.log("let lnft = " +env.lnft.address + ";");
+    console.log("let lge = " +env.lge.address + ";");
+    await reaper.approveMax(env.lge.address, env.ftm.address);
+  }
+
+  async function mintNFTs(amount) {
+    for(let i=0; i<amount; i++) {
+      await elastic.mintTestNFT(enft, self);
+      await elastic.mintTestNFT(lnft, self);
+    }
+  }
+
+  async function logBalance() {
+    let balance = await reaper.getUserBalance(self, ftm);
+    console.log("user ftm balance: " +balance.toString());
+  }
+
+  async function logTerms() {
+    let terms = await elastic.viewTerms(lge, self);
+    console.log(terms);
+  }
+
+  async function logAllocations() {
+    let eAllocation = await elastic.viewAllocation(lge, enft, 1);
+    let lAllocation = await elastic.viewAllocation(lge, lnft, 1);
+    console.log(">>>Epic NFT Allocation<<<");
+    console.log(eAllocation);
+    console.log(">>>Lame NFT Allocation<<<");
+    console.log(lAllocation);
+  }
+
   let pkeys = [
-    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-    "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
-    "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a",
+    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+    /*"0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+    "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a"
     "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6",
     "0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a",
     "0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba",
@@ -23,69 +85,53 @@ async function main() {
     "0xea6c44ac03bff858b476bba40716402b03e41b8e97e276d1baec7c37d42484a0",
     "0x689af8efa8c651a91ad287602527f3af2fe9f6501a7ac4b061667b5a93e037fd",
     "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0",
-    "0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e"
+    "0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e"*/
   ];
 
-/*
-  async function loadWallets(pkeyArray) {
-    let wallets = [];
-    for (let i=0; i<pkeyArray.length; i++) {
-      let wallet = new ethers.Wallet(pkeyArray[i]);
-      wallets.push(wallet);
-    }
-    return wallets;
-  }
-  let wallets = await loadWallets(pkeys);
-  let env = await elastic.assembleEnvironment(wallets);
-  */
-
-  let state;
   let self = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266";
-  let oath = "0x36C02dA8a0983159322a80FFE9F24b1acfF8B570";
-  let ftm = "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F";
-  let enft = "0x4c5859f0F772848b2D91F1D83E2Fe57935348029";
-  let lnft = "0x1291Be112d480055DaFd8a610b7d1e203891C274";
   let zero = "0x0000000000000000000000000000000000000000";
-/*
-  let lgeContract = await elastic.deployLGE(
-    oath,
-    ftm,
-    ethers.utils.parseEther("80000000"),
-    await reaper.getTimestamp(),
-    await reaper.getTimestamp() + 10000
+
+  let oath = "0xf524930660f75CF602e909C15528d58459AB2A56";
+  let ftm = "0x26Df0Ea798971A97Ae121514B32999DfDb220e1f";
+  let enft = "0xA3b48c7b901fede641B596A4C10a4630052449A6";
+  let lnft = "0xa138575a030a2F4977D19Cc900781E7BE3fD2bc0";
+  let lge = "0x6c383Ef7C9Bf496b5c847530eb9c49a3ED6E4C56";
+
+  //await createEnvironment();
+  await license();
+  await logState();
+  await logBalance();
+  await logTerms();
+  await logAllocations();
+
+  await mintNFTs(5);
+
+  let batchPricing = await elastic.getBatchPricing(
+    lge,
+    [enft, enft, enft, enft, enft, lnft, lnft, lnft, lnft, lnft],
+    [1, 2, 3, 4, 5, 1, 2, 3, 4, 5]
   );
-*/
-  let lge = "0x1429859428c0abc9c2c47c8ee9fbaf82cfa0f20f";
+  console.log(batchPricing);
 
-  state = await elastic.viewState(lge);
-  console.log(state);
-/*
-  await elastic.addLicense(lge, enft, 7500, 500, 64800);
-  await elastic.addLicense(lge, lnft, 9000, 300, 5230);
-*/
-/*
-  await elastic.mintTestNFT(enft, self);
-  await elastic.mintTestNFT(lnft, self);
-  await elastic.mintTestNFT(enft, self);
-  await elastic.mintTestNFT(lnft, self);
-  await elastic.mintTestNFT(enft, self);
-  await elastic.mintTestNFT(lnft, self);
-*/
-  let license = await elastic.viewLicense(lge, enft);
-  console.log(">>>EPIC NFT<<<");
-  console.log(license);
-  license = await elastic.viewLicense(lge, lnft);
-  console.log(">>>LAME NFT<<<");
-  console.log(license);
-  console.log(await reaper.getUserBalance(self, ftm).toString());
-
-  //await reaper.approveMax(lge, ftm);
-  await elastic.buy(lge, 500, enft, 1);
-
-  let terms = await elastic.viewTerms(lge, self);
+  let terms = await elastic.getBatchTerms(
+    lge,
+    [enft, enft, enft, enft, enft, lnft, lnft, lnft, lnft, lnft],
+    [1, 2, 3, 4, 5, 1, 2, 3, 4, 5]
+  );
   console.log(terms);
 
-  state = await elastic.viewState(lge);
+/*
+  await elastic.batchPurchase(
+    lge,
+    1500,
+    [enft, enft, enft, enft, enft, lnft, lnft, lnft, lnft, lnft],
+    [1, 2, 3, 4, 5, 1, 2, 3, 4, 5],
+    true
+  );
+*/
+
+  await logTerms();
+  await logState();
 
 }
 
