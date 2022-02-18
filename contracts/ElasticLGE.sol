@@ -16,7 +16,11 @@ interface IOath {
 contract ElasticLGE is Ownable {
   using Math for uint;
 
-  uint public BASIS_POINTS = 10000;
+  uint public constant BASIS_POINTS = 10000;
+  uint public constant defaultTerm = 90 days;
+  uint public constant ventureTerm = 1460 days;
+  uint public constant defaultPrice = 1e18;
+  uint public constant venturePrice = 5e17;
 
   IOath public oath;
   IERC20 public counterAsset;
@@ -24,8 +28,6 @@ contract ElasticLGE is Ownable {
   uint public raised;
   uint public shareSupply;
   uint public totalOath;
-  uint public defaultTerm = 90 days;
-  uint public defaultPrice = 1e18;
 
   uint public beginning;
   uint public end;
@@ -90,7 +92,7 @@ contract ElasticLGE is Ownable {
       require(alloc.remaining >= amount, "_buyDiscounted: insufficient remaining");
       alloc.remaining -= amount;
     }
-    uint cost = amount * licenses[NFT].price / BASIS_POINTS;
+    uint cost = (amount * 1e18) * licenses[NFT].price / BASIS_POINTS;
     counterAsset.transferFrom(msg.sender, address(this), cost);
     _updateTerms(amount, licenses[NFT].term);
     shareSupply += amount;
@@ -99,6 +101,8 @@ contract ElasticLGE is Ownable {
   }
 
   function _buyDefault(uint amount) internal returns (bool) {
+    /*uint price = vc ? venturePrice : defaultPrice;
+    uint terms = vc ? ventureTerm : defaultTerm;*/
     uint cost = amount * defaultPrice;
     counterAsset.transferFrom(msg.sender, address(this), cost);
     _updateTerms(amount, defaultTerm);
@@ -112,9 +116,11 @@ contract ElasticLGE is Ownable {
     uint remaining = totalAmount;
     for (uint i = 0; i < NFTs.length; i++) {
       (uint available,,) = getPricingData(NFTs[i], indicies[i]);
-      uint amount = available > remaining ? available : remaining;
-      buy(amount, NFTs[i], indicies[i]);
-      remaining -= amount;
+      uint amount = Math.min(available, remaining);
+      if (amount > 0) {
+        buy(amount, NFTs[i], indicies[i]);
+        remaining -= amount;
+      }
       if (remaining == 0) { return true; }
     }
     if (remaining > 0) {
@@ -141,25 +147,27 @@ contract ElasticLGE is Ownable {
   }
 
   //per share and total
-  function getBatchPricing(uint totalAmount, address[] calldata NFTs, uint[] calldata indicies) public view returns (uint perShare, uint totalCost, uint totalShares) {
+  function getBatchPricing(
+    uint totalAmount,
+    address[] calldata NFTs,
+    uint[] calldata indicies
+  ) public view returns (
+    uint perShare,
+    uint totalCost
+  ) {
     uint remaining = totalAmount;
+    uint totalShares;
     for (uint i = 0; i < NFTs.length; i++) {
       (uint available, uint _perShare,) = getPricingData(NFTs[i], indicies[i]);
       uint amount = Math.min(remaining, available);
+      perShare = findWeightedAverage(amount, totalShares, _perShare, perShare);
       remaining -= amount;
-      if (perShare == 0) {
-        perShare += _perShare;
-      } else {
-        uint weight = _perShare * 1e18 / perShare;
-        perShare = (_perShare * weight) * (perShare * (1e18 - weight)) / 1e18;
-      }
+      totalShares += amount;
     }
     if (remaining > 0) {
-      uint weight = 1e18 * 1e18 / perShare;
-      perShare = (1e18 * weight) * (perShare * (1e18 - weight)) / 1e18;
+      perShare = findWeightedAverage(remaining, totalShares, defaultPrice, perShare);
     }
     totalCost = perShare * totalAmount;
-    totalShares = totalAmount / perShare;
   }
 
   function getBatchTerms(address user, uint totalShares, address[] calldata NFTs, uint[] calldata indicies) public view returns (uint term) {
@@ -169,13 +177,13 @@ contract ElasticLGE is Ownable {
       (uint available,,) = getPricingData(NFTs[i], indicies[i]);
       uint amount = Math.min(remaining, available);
       uint _term = licenses[NFTs[i]].term;
-      term = getUpdatedTerms(currentShares, term, amount, _term);
+      term = findWeightedAverage(currentShares, amount, _term, term);
       remaining -= amount;
       currentShares += amount;
       totalShares += amount;
     }
     if (remaining > 0) {
-      term = getUpdatedTerms(currentShares, term, remaining, defaultTerm);
+      term = findWeightedAverage(currentShares, remaining, defaultTerm, term);
     }
   }
 
@@ -191,18 +199,28 @@ contract ElasticLGE is Ownable {
     total = available * perShare;
   }
 
-  function getUpdatedTerms(uint oldShares, uint oldTerm, uint newShares, uint newTerm) public pure returns (uint term) {
-    if (oldShares == 0) {
-      term = newTerm;
-    } else {
-      uint weight = (newShares * 1e18 / oldShares);
-      term = ((newTerm * weight) + (oldTerm * (1e18 - weight))) / 1e18;
-    }
-  }
-
   function addLicense(address addr, uint threshold, uint limit, uint term) public onlyOwner returns (bool) {
     licenses[addr] = License(threshold, limit, term);
     return true;
+  }
+
+  function findWeightedAverage(
+    uint addedValue,
+    uint oldValue,
+    uint weightedNew,
+    uint weightedOld
+  ) internal pure returns (
+    uint weightedAverage
+  ) {
+    if (oldValue == 0) {
+      weightedAverage = weightedNew;
+    } else {
+      uint weightNew = (addedValue * 1e18 / oldValue);
+      uint weightOld = (oldValue * 1e18 / addedValue);
+      uint combined = weightNew + weightOld;
+      uint sumEach = (weightedNew * weightNew) + (weightedOld * weightOld);
+      weightedAverage = sumEach / combined;
+    }
   }
 
   function activate(address addr, uint index, uint amount) internal returns (bool) {
@@ -220,8 +238,11 @@ contract ElasticLGE is Ownable {
       userTerms.term += _term;
       return true;
     } else {
-      uint weight = (_shares * 1e18 / userTerms.shares);
-      uint weightedAverage = ((_term * weight) + (userTerms.term * (1e18 - weight))) / 1e18;
+      uint weightNew = (_shares * 1e18 / userTerms.shares);
+      uint weightOld = (userTerms.shares * 1e18 / _shares);
+      uint combined = weightNew + weightOld;
+      uint sumEach = (_term * weightNew) + (userTerms.term * weightOld);
+      uint weightedAverage = sumEach / combined;
       userTerms.term = weightedAverage;
       userTerms.shares += _shares;
       return true;
