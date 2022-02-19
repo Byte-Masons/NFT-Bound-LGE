@@ -196,37 +196,60 @@ contract ElasticLGE is Ownable {
   // @dev helper function for the front end
   // @returns weighted average price per share, total cost, and total shares available for all NFTs passed in
   function getBatchPricing(
+    uint totalAmount,
     address[] calldata NFTs,
-    uint[] calldata indicies
+    uint[] calldata indicies,
+    bool venture
   ) public view returns (
-    uint,
-    uint,
-    uint
+    uint nftPerShare,
+    uint nftTotalCost,
+    uint nftTotalShares,
+    uint perShare,
+    uint totalCost,
   ) {
-    uint perShare;
-    uint totalCost;
+    uint remaining = totalAmount;
     uint totalShares;
     for (uint i = 0; i < NFTs.length; i++) {
-      (uint amount, uint _perShare,) = getPricingData(NFTs[i], indicies[i]);
+      (uint available, uint _perShare,) = getPricingData(NFTs[i], indicies[i]);
+      uint amount = Math.min(available, remaining);
       perShare = findWeightedAverage(amount, totalShares, _perShare, perShare);
       totalShares += amount;
+      remaining -= amount;
     }
-    totalCost = perShare * totalShares;
-    return (perShare, totalCost, totalShares);
+    nftPerShare = perShare;
+    nftTotalShares = totalShares;
+    nftTotalCost = perShare * totalShares;
+    if (remaining > 0) {
+      perShare = findWeightedAverage(remaining, totalShares, (venture ? venturePrice : defaultPrice), perShare);
+    }
+    totalCost = perShare * totalAmount;
   }
 
   // @dev helper function for the front end
   // @returns the weighted average terms for all NFTs passed in
-  function getBatchTerms(address[] calldata NFTs, uint[] calldata indicies) public view returns (uint) {
+  function getBatchTerms(
+    uint totalAmount,
+    address[] calldata NFTs,
+    uint[] calldata indicies,
+    bool venture
+  ) public view returns (
+    uint nftTerm,
+    uint term
+  ) {
+    uint remaining = totalAmount;
     uint totalShares;
-    uint avgTerm;
+    uint term;
     for (uint i = 0; i < NFTs.length; i++) {
-      (uint amount,,) = getPricingData(NFTs[i], indicies[i]);
+      (uint available,,) = getPricingData(NFTs[i], indicies[i]);
+      uint amount = Math.min(available, remaining);
       uint _term = licenses[NFTs[i]].term;
-      avgTerm = findWeightedAverage(amount, totalShares, _term, avgTerm);
+      term = findWeightedAverage(amount, totalShares, _term, term);
       totalShares += amount;
     }
-    return avgTerm;
+    nftTerm = term;
+    if (remaining > 0) {
+      term = findWeightedAverage(remaining, totalShares, (venture ? venturePrice : defaultPrice), perShare);
+    }
   }
 
   // @dev useful function to return commonly used pricing data
