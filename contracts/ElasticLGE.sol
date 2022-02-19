@@ -25,7 +25,7 @@ contract ElasticLGE is Ownable {
   // defaultPrice:: base price - 1 unit ($FTM) per share
   // venturePrice:: price for venture terms
 
-  uint public constant BASIS_POINTS = 10000;
+  uint public constant BASIS_POINTS = 10_000;
   uint public constant defaultTerm = 90 days;
   uint public constant ventureTerm = 1460 days;
   uint public constant defaultPrice = 1e18;
@@ -33,20 +33,20 @@ contract ElasticLGE is Ownable {
 
   // oath:: token for sale
   // counterAsset:: currency accepted
-  IOath public oath;
-  IERC20 public counterAsset;
+  IOath public immutable oath;
+  IERC20 public immutable counterAsset;
 
   // raised:: amount of counterAsset raised
   // shareSupply:: total amount of shares in existence
   // totalOath:: amount of Oath available
   uint public raised;
   uint public shareSupply;
-  uint public totalOath;
+  uint public immutable totalOath;
 
   // beginning:: start time of event
   // end:: end time of event - when vesting begins
-  uint public beginning;
-  uint public end;
+  uint public immutable beginning;
+  uint public immutable end;
 
   // price:: 9000 = 90.00% of full value
   // limit:: the maximum amount that can be purchased from the NFT
@@ -87,6 +87,7 @@ contract ElasticLGE is Ownable {
     uint _beginning,
     uint _end
   ) {
+    require((_end - _beginning) <= 3 days, "LGE too long");
     oath = IOath(_oath);
     counterAsset = IERC20(_counterAsset);
     totalOath = _totalOath;
@@ -101,12 +102,12 @@ contract ElasticLGE is Ownable {
   // venture:: type of default term user would like to use
 
   function buy(uint amount, address NFT, uint index, bool venture) public returns (bool) {
-    require (amount > 0, "buy: please input amount");
     require(block.timestamp >= beginning, "lge has not begun!");
+    require (amount != 0, "buy: please input amount");
     if(NFT == address(0)) {
       _buyDefault(amount, venture);
     } else {
-      require(licenses[NFT].limit > 0, "buy: this NFT is not eligible for whitelist");
+      require(licenses[NFT].limit != 0, "buy: this NFT is not eligible for whitelist");
       require(IERC721(NFT).ownerOf(index) == msg.sender, "buyer is not the owner");
       _buyDiscounted(amount, NFT, index);
     }
@@ -198,28 +199,34 @@ contract ElasticLGE is Ownable {
     address[] calldata NFTs,
     uint[] calldata indicies
   ) public view returns (
-    uint perShare,
-    uint totalCost,
-    uint totalShares
+    uint,
+    uint,
+    uint
   ) {
+    uint perShare;
+    uint totalCost;
+    uint totalShares;
     for (uint i = 0; i < NFTs.length; i++) {
       (uint amount, uint _perShare,) = getPricingData(NFTs[i], indicies[i]);
       perShare = findWeightedAverage(amount, totalShares, _perShare, perShare);
       totalShares += amount;
     }
     totalCost = perShare * totalShares;
+    return (perShare, totalCost, totalShares);
   }
 
   // @dev helper function for the front end
   // @returns the weighted average terms for all NFTs passed in
-  function getBatchTerms(address[] calldata NFTs, uint[] calldata indicies) public view returns (uint term) {
+  function getBatchTerms(address[] calldata NFTs, uint[] calldata indicies) public view returns (uint) {
     uint totalShares;
+    uint avgTerm;
     for (uint i = 0; i < NFTs.length; i++) {
       (uint amount,,) = getPricingData(NFTs[i], indicies[i]);
       uint _term = licenses[NFTs[i]].term;
-      term = findWeightedAverage(amount, totalShares, _term, term);
+      avgTerm = findWeightedAverage(amount, totalShares, _term, avgTerm);
       totalShares += amount;
     }
+    return avgTerm;
   }
 
   // @dev useful function to return commonly used pricing data
@@ -265,27 +272,27 @@ contract ElasticLGE is Ownable {
     uint oldValue,
     uint weightedNew,
     uint weightedOld
-  ) internal pure returns (
-    uint weightedAverage
+  ) public pure returns (
+    uint
   ) {
     if (oldValue == 0) {
-      weightedAverage = weightedNew;
+      return weightedNew;
     } else {
       uint weightNew;
       uint weightOld;
-      if (weightNew < weightOld) {
+      if (addedValue < oldValue) {
         weightNew = addedValue * BASIS_POINTS / oldValue;
-        weightOld = 10000 - weightNew;
-      } else if (weightOld < weightNew) {
+        weightOld = BASIS_POINTS - weightNew;
+      } else if (oldValue < addedValue) {
         weightOld = oldValue * BASIS_POINTS / addedValue;
-        weightNew = 10000 - weightOld;
+        weightNew = BASIS_POINTS - weightOld;
       } else {
-        weightNew = 10000;
-        weightOld = 10000;
+        weightNew = BASIS_POINTS / 2;
+        weightOld = BASIS_POINTS / 2;
       }
       uint a = weightedNew * weightNew / BASIS_POINTS;
       uint b = weightedOld * weightOld / BASIS_POINTS;
-      weightedAverage = a + b;
+      return (a + b);
     }
   }
 
