@@ -193,6 +193,15 @@ contract ElasticLGE is Ownable {
     return (totalOath * terms[msg.sender].shares / shareSupply);
   }
 
+  struct BatchPricingData{
+    uint nftPerShare;
+    uint nftTotalCost;
+    uint nftTotalShares;
+    uint perShare;
+    uint totalAvailable;
+    uint totalCost;
+  }
+
   // @dev helper function for the front end
   // @returns weighted average price per share, total cost, and total shares available for all NFTs passed in
   function getBatchPricing(
@@ -201,28 +210,25 @@ contract ElasticLGE is Ownable {
     uint[] calldata indicies,
     bool venture
   ) public view returns (
-    uint nftPerShare,
-    uint nftTotalCost,
-    uint nftTotalShares,
-    uint perShare,
-    uint totalCost
+    BatchPricingData memory data
   ) {
     uint remaining = totalAmount;
     uint totalShares;
     for (uint i = 0; i < NFTs.length; i++) {
       (uint available, uint _perShare,) = getPricingData(NFTs[i], indicies[i]);
       uint amount = Math.min(available, remaining);
-      perShare = findWeightedAverage(amount, totalShares, _perShare, perShare);
+      data.perShare = findWeightedAverage(amount, totalShares, _perShare, data.perShare);
       totalShares += amount;
       remaining -= amount;
+      data.totalAvailable += available;
     }
-    nftPerShare = perShare;
-    nftTotalShares = totalShares;
-    nftTotalCost = perShare * totalShares;
+    data.nftPerShare = data.perShare;
+    data.nftTotalShares = totalShares;
+    data.nftTotalCost = data.perShare * totalShares;
     if (remaining > 0) {
-      perShare = findWeightedAverage(remaining, totalShares, (venture ? venturePrice : defaultPrice), perShare);
+      data.perShare = findWeightedAverage(remaining, totalShares, (venture ? venturePrice : defaultPrice), data.perShare);
     }
-    totalCost = perShare * totalAmount;
+    data.totalCost = data.perShare * totalAmount;
   }
 
   // @dev helper function for the front end
@@ -277,7 +283,9 @@ contract ElasticLGE is Ownable {
   // @_term:: new term for shares being added - weighted against existing shares/term
   function _updateTerms(uint _shares, uint _term) internal returns (bool) {
     Terms storage userTerms = terms[msg.sender];
-    userTerms.term = findWeightedAverage(_shares, userTerms.shares, _term, userTerms.term);
+
+    userTerms.term = findWeightedAverage(_shares, userTerms.shares,_term, userTerms.term);
+
     userTerms.shares += _shares;
     return true;
   }
@@ -295,7 +303,7 @@ contract ElasticLGE is Ownable {
     uint oldValue,
     uint weightedNew,
     uint weightedOld
-  ) public pure returns (
+  ) public view returns (
     uint
   ) {
     if (oldValue == 0) {
@@ -304,17 +312,17 @@ contract ElasticLGE is Ownable {
       uint weightNew;
       uint weightOld;
       if (addedValue < oldValue) {
-        weightNew = addedValue * BASIS_POINTS / oldValue;
-        weightOld = BASIS_POINTS - weightNew;
+        weightNew = addedValue * 1e27 / (addedValue + oldValue);
+        weightOld = 1e27 - weightNew;
       } else if (oldValue < addedValue) {
-        weightOld = oldValue * BASIS_POINTS / addedValue;
-        weightNew = BASIS_POINTS - weightOld;
+        weightOld = oldValue * 1e27 / (addedValue + oldValue);
+        weightNew = 1e27 - weightOld;
       } else {
-        weightNew = BASIS_POINTS / 2;
-        weightOld = BASIS_POINTS / 2;
+        weightNew = 1e27 / 2;
+        weightOld = 1e27 / 2;
       }
-      uint a = weightedNew * weightNew / BASIS_POINTS;
-      uint b = weightedOld * weightOld / BASIS_POINTS;
+      uint a = weightedNew * weightNew / 1e27;
+      uint b = weightedOld * weightOld / 1e27;
       return (a + b);
     }
   }
