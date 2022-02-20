@@ -205,7 +205,7 @@ contract ElasticLGE is Ownable {
     uint nftTotalCost,
     uint nftTotalShares,
     uint perShare,
-    uint totalCost,
+    uint totalCost
   ) {
     uint remaining = totalAmount;
     uint totalShares;
@@ -238,17 +238,17 @@ contract ElasticLGE is Ownable {
   ) {
     uint remaining = totalAmount;
     uint totalShares;
-    uint term;
     for (uint i = 0; i < NFTs.length; i++) {
       (uint available,,) = getPricingData(NFTs[i], indicies[i]);
       uint amount = Math.min(available, remaining);
       uint _term = licenses[NFTs[i]].term;
       term = findWeightedAverage(amount, totalShares, _term, term);
       totalShares += amount;
+      remaining -= amount;
     }
     nftTerm = term;
     if (remaining > 0) {
-      term = findWeightedAverage(remaining, totalShares, (venture ? venturePrice : defaultPrice), perShare);
+      term = findWeightedAverage(remaining, totalShares, (venture ? ventureTerm : defaultTerm), term);
     }
   }
 
