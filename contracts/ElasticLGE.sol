@@ -33,8 +33,10 @@ contract ElasticLGE is Ownable {
 
   // oath:: token for sale
   // counterAsset:: currency accepted
-  IOath public immutable oath;
+  // multisig:: address where funds raised are sent
+  IOath public oath;
   IERC20 public immutable counterAsset;
+  address public constant multisig = 0x111731A388743a75CF60CCA7b140C58e41D83635;
 
   // raised:: amount of counterAsset raised
   // shareSupply:: total amount of shares in existence
@@ -103,6 +105,7 @@ contract ElasticLGE is Ownable {
 
   function buy(uint amount, address NFT, uint index, bool venture) public returns (bool) {
     require(block.timestamp >= beginning, "lge has not begun!");
+    require(block.timestamp <= end, "lge has ended.");
     require (amount != 0, "buy: please input amount");
     if(NFT == address(0)) {
       _buyDefault(amount, venture);
@@ -129,7 +132,7 @@ contract ElasticLGE is Ownable {
       alloc.remaining -= amount;
     }
     uint cost = (amount * 1e18) * licenses[NFT].price / BASIS_POINTS;
-    counterAsset.transferFrom(msg.sender, address(this), cost);
+    counterAsset.transferFrom(msg.sender, multisig, cost);
     _updateTerms(amount, licenses[NFT].term);
     shareSupply += amount;
     raised += cost;
@@ -143,7 +146,7 @@ contract ElasticLGE is Ownable {
     uint price = _venture ? venturePrice : defaultPrice;
     uint term = _venture ? ventureTerm : defaultTerm;
     uint cost = amount * price;
-    counterAsset.transferFrom(msg.sender, address(this), cost);
+    counterAsset.transferFrom(msg.sender, multisig, cost);
     _updateTerms(amount, term);
     shareSupply += amount;
     raised += cost;
@@ -177,13 +180,13 @@ contract ElasticLGE is Ownable {
 
   // @dev used to issue Oath to users after the LGE, claims all unclaimed Oath from last claim to current
   function claim() external returns (bool) {
-    require(claimed[msg.sender] < _totalOwed(), "you have no more tokens to claim");
     require(block.timestamp >= end, "lge has not ended");
     uint perSecond = _totalOwed() / terms[msg.sender].term;
     uint secondsClaimed = claimed[msg.sender] / perSecond;
     uint lastClaim = end + secondsClaimed;
-    uint owed = block.timestamp - lastClaim * perSecond;
+    uint owed = (block.timestamp - lastClaim) * perSecond;
     claimed[msg.sender] += owed;
+    require(claimed[msg.sender] <= _totalOwed(), "overflow");
     oath.mint(msg.sender, owed);
     return true;
   }
@@ -272,19 +275,13 @@ contract ElasticLGE is Ownable {
     totalCost = available * perShare;
   }
 
-  // @dev admin function to add a license to a given NFT project. Could use some guardrails.
-  function addLicense(address addr, uint threshold, uint limit, uint term) public onlyOwner returns (bool) {
-    licenses[addr] = License(threshold, limit, term);
-    return true;
-  }
-
   // @dev updates the user's terms
   // @_shares:: amount of shares being added to total - used to determine weight
   // @_term:: new term for shares being added - weighted against existing shares/term
   function _updateTerms(uint _shares, uint _term) internal returns (bool) {
     Terms storage userTerms = terms[msg.sender];
 
-    userTerms.term = findWeightedAverage(_shares, userTerms.shares,_term, userTerms.term);
+    userTerms.term = findWeightedAverage(_shares, userTerms.shares, _term, userTerms.term);
 
     userTerms.shares += _shares;
     return true;
@@ -303,7 +300,7 @@ contract ElasticLGE is Ownable {
     uint oldValue,
     uint weightedNew,
     uint weightedOld
-  ) public view returns (
+  ) public pure returns (
     uint
   ) {
     if (oldValue == 0) {
@@ -338,6 +335,16 @@ contract ElasticLGE is Ownable {
     Allocation storage alloc = allocations[addr][index];
     alloc.remaining = licenses[addr].limit - amount;
     alloc.activated = true;
+    return true;
+  }
+
+  function upgradeOath(address newOath) public onlyOwner {
+    oath = IOath(newOath);
+  }
+
+  // @dev admin function to add a license to a given NFT project. Could use some guardrails.
+  function addLicense(address addr, uint threshold, uint limit, uint term) public onlyOwner returns (bool) {
+    licenses[addr] = License(threshold, limit, term);
     return true;
   }
 }

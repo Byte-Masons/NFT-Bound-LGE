@@ -1,5 +1,7 @@
 const tokens = require("../tokens.json");
 const reaper = require("./ReaperSDK.js");
+const nft = require("./supportedNFTs.json");
+const { upgrades } = require("hardhat");
 
 async function deployLGE(oath, counterAsset, totalOath, beginning, end) {
   let LGE = await ethers.getContractFactory("ElasticLGE");
@@ -71,22 +73,28 @@ async function batchPurchase(lgeAddress, totalAmount, nftArray, indexArray, vent
   return receipt;
 }
 
-async function getBatchPricing(lgeAddress, nftArray, indexArray) {
+async function getBatchPricing(lgeAddress, totalAmount, nftArray, indexArray, venture) {
   let LGE = await ethers.getContractFactory("ElasticLGE");
   let lge = await LGE.attach(lgeAddress);
-  let prices = await lge.getBatchPricing(nftArray, indexArray);
+  let prices = await lge.getBatchPricing(totalAmount, nftArray, indexArray, venture);
   return {
-    "perShare": prices[0].toString(),
-    "totalCost": prices[1].toString(),
-    "totalShares": prices[2].toString()
+    "nftPricePerShare": prices[0].toString(),
+    "nftTotalCost": prices[1].toString(),
+    "nftTotalShares": prices[2].toString(),
+    "perShare": prices[3].toString(),
+    "totalAvailable": prices[4].toString(),
+    "totalCost": prices[5].toString()
   }
 }
 
-async function getBatchTerms(lgeAddress, nftArray, indexArray) {
+async function getBatchTerms(lgeAddress, totalAmount, nftArray, indexArray, venture) {
   let LGE = await ethers.getContractFactory("ElasticLGE");
   let lge = await LGE.attach(lgeAddress);
-  let term = await lge.getBatchTerms(nftArray, indexArray);
-  return term.toString();
+  let term = await lge.getBatchTerms(totalAmount, nftArray, indexArray, venture);
+  return {
+    "nftTerm": term[0].toString(),
+    "term": term[1].toString()
+  }
 }
 
 async function getPricingData(lgeAddress, nftAddress, index) {
@@ -113,7 +121,7 @@ async function addLicense(lgeAddress, nftAddress, price, limit, term) {
   return receipt;
 }
 
-async function assembleEnvironment(accounts) {
+async function assembleEnvironment(accounts, duration) {
   let mockFTM = await reaper.deployTestToken("Fantom", "WFTM");
   let enft = await deployTestNFT("Epic NFT", "eNFT");
   let lnft = await deployTestNFT("Lame NFT", "lNFT");
@@ -128,7 +136,7 @@ async function assembleEnvironment(accounts) {
     mockFTM.address,
     ethers.utils.parseEther("80000000"),
     await reaper.getTimestamp(),
-    await reaper.getTimestamp() + 10000
+    await reaper.getTimestamp() + duration
   );
   return {
     "oath": mockOath,
@@ -160,6 +168,61 @@ async function findOwner(nftAddress, id) {
   return owner;
 }
 
+async function claim(lgeAddress) {
+  let LGE = await ethers.getContractFactory("ElasticLGE");
+  let lge = await LGE.attach(lgeAddress);
+  let tx = await lge.claim();
+  let receipt = await tx.wait();
+  return receipt;
+}
+
+async function deployWrappedFtm() {
+  let Wftm = await ethers.getContractFactory("WrappedFtm");
+  let wftm = await Wftm.deploy();
+  return wftm;
+}
+
+async function deployOath(admin) {
+  let Oath = await ethers.getContractFactory("Oath");
+  let proxy = await upgrades.deployProxy(
+    Oath,
+    [admin],
+    { kind: 'uups' }
+  );
+  await proxy.deployed();
+  return proxy;
+}
+
+async function createProductionEnvironment(admin, duration) {
+  let oath = await deployOath(admin);
+  console.log("Oath proxy address: " +oath.address);
+  reaper.sleep(30000);
+  let wftm = await deployWrappedFtm();
+  console.log("test wftm address: " +wftm.address);
+  reaper.sleep(30000);
+  let lge = await deployLGE(
+    oath.address,
+    wftm.address,
+    ethers.utils.parseEther("80000000"),
+    await reaper.getTimestamp(),
+    await reaper.getTimestamp() + duration
+  );
+  reaper.sleep(30000);
+  let minter = await oath.MINTER_ROLE();
+  let tx = await oath.grantRole(minter, lge.address);
+  await tx.wait();
+  reaper.sleep(30000);
+  console.log("lge address: " +lge.address);
+}
+
+async function addLicenses(lgeAddress) {
+  for (let i=0; i<nft.supported.length; i++) {
+    await addLicense(lgeAddress, nft.supported[i].address, nft.supported[i].price, nft.supported[i].limit, nft.supported[i].vest * 86400);
+    console.log(`license added for ${nft.supported[i].name}`)
+    reaper.sleep(10000);
+  }
+}
+
 module.exports = {
   deployLGE,
   viewState,
@@ -176,5 +239,8 @@ module.exports = {
   assembleEnvironment,
   deployTestNFT,
   mintTestNFT,
-  findOwner
+  findOwner,
+  createProductionEnvironment,
+  addLicenses,
+  claim
 }

@@ -1,0 +1,473 @@
+{
+  "supported": [
+    {
+      "name": "Magicats",
+      "address": "0x2ab5c606a5aa2352f8072b9e2e8a213033e2c4c9",
+      "vest": 49,
+      "price": 8500,
+      "limit": 240
+    },
+    {
+      "name": "Horrors",
+      "address": "0x68874c562efbbc6e2487fa77b7700064d209d4ca",
+      "vest": 42,
+      "price": 7000,
+      "limit": 1652
+    },
+    {
+      "name": "Ludwig of the Undead",
+      "address": "0xf2558d6a252C1041a3902870B1FdB0B7524B3098",
+      "vest": 14,
+      "price": 8000,
+      "limit": 7300
+    },
+    {
+      "name": "Bruce the Goose",
+      "address": "0xc70aae0bd664255236143cc1b92a7bd9b2ef019e",
+      "vest": 21,
+      "price": 8500,
+      "limit": 1126
+    },
+    {
+      "name": "Ernesto",
+      "address": "0x3c869af1dd2fa2ee3a6c7b3a6ad7f4350fc5f413",
+      "vest": 169,
+      "price": 6500,
+      "limit": 210
+    },
+    {
+      "name": "Screamo",
+      "address": "0x60208c88d6e61305726697b4e3a7c7a5c615d011",
+      "vest": 56,
+      "price": 8000,
+      "limit": 250
+    },
+    {
+      "name": "Beardies",
+      "address": "0x31911223bb3ff5b773af3e677fc0ac5760215e4e",
+      "vest": 28,
+      "price": 9000,
+      "limit": 269
+    },
+    {
+      "name": "Beethoven x Reaper",
+      "address": "0xec7fd6cb6584e3a0e7ce83afc94dce9b51afb001",
+      "vest": 56,
+      "price": 9000,
+      "limit": 25000
+    },
+    {
+      "name": "Ancestral Umans",
+      "address": "0x972dd206a7c2d4ae46db1db700bc79de1bc59960",
+      "vest": 90,
+      "price": 8000,
+      "limit": 500
+    },
+    {
+      "name": "Fantom Lords",
+      "address": "0xfee8077c909d956e9036c2d2999723931cefe548",
+      "vest": 21,
+      "price": 9000,
+      "limit": 165
+    },
+    {
+      "name": "Pepe Tarot Edition 0",
+      "address": "0x17b28274f8c1d64b683ad097988fa5707b228f80",
+      "vest": 3,
+      "price": 9500,
+      "limit": 3784
+    },
+    {
+      "name": "Pepe Tarot Edition 1",
+      "address": "0x97fba89cbf08d1bfeedf9bd561ff464a0a9b8038",
+      "vest": 7,
+      "price": 10500,
+      "limit": 270
+    },
+    {
+      "name": "bitUmans",
+      "address": "0x8c2fcd5d857ee9aa19d1a27ae81ab1129385e3ac",
+      "vest": 172,
+      "price": 7000,
+      "limit": 3400
+    },
+    {
+      "name": "Fantom Boy",
+      "address": "0x8f77400a76b38e9a359b60c4cc3c295d80c60a6f",
+      "vest": 56,
+      "price": 9000,
+      "limit": 198
+    },
+    {
+      "name": "HelpinLudwigs",
+      "address": "0x72dafe08f228aaa3177932b50232fd092478b473",
+      "vest": 14,
+      "price": 8500,
+      "limit": 3571
+    },
+    {
+      "name": "Teens on Acid",
+      "address": "0x1d75ed26a81878ae05d781183e3ed2d06b5554db",
+      "vest": 1,
+      "price": 11000,
+      "limit": 4444
+    },
+    {
+      "name": "The Lost Kingdom",
+      "address": "0x0f99f616a7fbc1cd41438e7e54d36df5c766040b",
+      "vest": 1825,
+      "price": 4000,
+      "limit": 17308
+    },
+    {
+      "name": "8bit Nostalgia",
+      "address": "0x406349e0bcdf323526c11b4e987a699471142b84",
+      "vest": 35,
+      "price": 8500,
+      "limit": 1429
+    },
+    {
+      "name": "CyberNekos",
+      "address": "0x7acee5d0acc520fab33b3ea25d4feef1ffebde73",
+      "vest": 21,
+      "price": 9000,
+      "limit": 95
+    },
+    {
+      "name": "Skullys",
+      "address": "0x25ff0d27395a7aad578569f83e30c82a07b4ee7d",
+      "vest": 14,
+      "price": 8500,
+      "limit": 330
+    },
+    {
+      "name": "FantomPunks",
+      "address": "0xf8883aefe2a627ea5cc313ef88760d5a507c4c1c",
+      "vest": 35,
+      "price": 8000,
+      "limit": 5000
+    },
+    {
+      "name": "Hamster Heroes",
+      "address": "0xe260bed39020f969bd66b4e2ffcc3c5a34b46a41",
+      "vest": 49,
+      "price": 9000,
+      "limit": 180
+    },
+    {
+      "name": "Degener Rabits",
+      "address": "0x8e7c434b248d49d873d0f8448e0fcec895b1b92d",
+      "vest": 420,
+      "price": 5500,
+      "limit": 250
+    },
+    {
+      "name": "Anonymous",
+      "address": "0xf8098bcadd37cbb4f6c3a44cd071c2c97320000e",
+      "vest": 28,
+      "price": 9000,
+      "limit": 2000
+    },
+    {
+      "name": "Magicgools",
+      "address": "0x673Ce61e0Ec7fAD6c6Fe689193a0AdEF38567965",
+      "vest": 35,
+      "price": 9000,
+      "limit": 151
+    },
+    {
+      "name": "Riotgools",
+      "address": "0x4F504aB2E7b196A4165Ab3dB71E75cB2B37070e0",
+      "vest": 42,
+      "price": 9000,
+      "limit": 600
+    },
+    {
+      "name": "Portalheads",
+      "address": "0xb54ff1ebc9950fce19ee9e055a382b1219f862f0",
+      "vest": 99,
+      "price": 8000,
+      "limit": 250
+    },
+    {
+      "name": "Slurpies",
+      "address": "0xBf2B77b4b3FbbFe1F7a757D1CaB4D294Fc027Ae8",
+      "vest": 7,
+      "price": 9500,
+      "limit": 43
+    },
+    {
+      "name": "Spiritopoly",
+      "address": "0x4162977558eb5830e6fc5adeb67bf6625f458929",
+      "vest": 21,
+      "price": 9000,
+      "limit": 200
+    },
+    {
+      "name": "Astrokids",
+      "address": "0x3d7e7157459a352ada13ed8da1ba54a08a883965",
+      "vest": 35,
+      "price": 9000,
+      "limit": 90
+    },
+    {
+      "name": "Fantom Wizards",
+      "address": "0x551bd8ef8e85560a0b91765e052e17d91e0f1de0",
+      "vest": 56,
+      "price": 9000,
+      "limit": 297
+    },
+    {
+      "name": "Fantom Knights",
+      "address": "0x79def0b813944986629d4bedc895b67aca5b6f70",
+      "vest": 35,
+      "price": 9000,
+      "limit": 125
+    },
+    {
+      "name": "BitDaemons",
+      "address": "0xbea7c3f2d91a9c6fd7f5aa9c803d4c31c1db8db9",
+      "vest": 14,
+      "price": 8500,
+      "limit": 580
+    },
+    {
+      "name": "DaemonPunks",
+      "address": "0x22DEa64A0e9ecbB13d2B0dD2d95a91A06DACb23B",
+      "vest": 21,
+      "price": 8500,
+      "limit": 580
+    },
+    {
+      "name": "Pink Flamingo Social Club",
+      "address": "0xd761dB316b5b9C9C51F7f80127497Bc618e2B422",
+      "vest": 7,
+      "price": 9300,
+      "limit": 257
+    },
+    {
+      "name": "Fantom Spooky Cards",
+      "address": "0x07CD475B4E0DA15E5ebf7E5e1f30cef1f432ea89",
+      "vest": 49,
+      "price": 9000,
+      "limit": 3000
+    },
+    {
+      "name": "Fantom Underworld",
+      "address": "0xB8d562046f107d12F128E7d8DE0C491d62531c9F",
+      "vest": 56,
+      "price": 8000,
+      "limit": 4651
+    },
+    {
+      "name": "Fantums",
+      "address": "0x0C600D41b9C7656e60C0bf76D79B1532b4770D0C",
+      "vest": 56,
+      "price": 9000,
+      "limit": 43
+    },
+    {
+      "name": "Rivals.Zone",
+      "address": "0xfd2b5b4335fed7338e1c3f5e4be32f914d5562fd",
+      "vest": 35,
+      "price": 9500,
+      "limit": 208
+    },
+    {
+      "name": "Fantom Wheelz",
+      "address": "0x7bC39773FA29B86E7A337a7aaF7C55395Dff2277",
+      "vest": 28,
+      "price": 8500,
+      "limit": 123
+    },
+    {
+      "name": "Fugly Fantom Frogs",
+      "address": "0xA03c5a2E339C8c28fe1a69AEC528EE2F25Fa12cC",
+      "vest": 14,
+      "price": 8000,
+      "limit": 120
+    },
+    {
+      "name": "Binary Punks",
+      "address": "0xd5eb80F437C318b3BF8b3AF985224966A3054F76",
+      "vest": 14,
+      "price": 9000,
+      "limit": 44
+    },
+    {
+      "name": "Lost Fantom Warriors",
+      "address": "0xF6c34B502EC139728edA41e372750F581E224436",
+      "vest": 21,
+      "price": 8000,
+      "limit": 1500
+    },
+    {
+      "name": "Neon Shadow Punks",
+      "address": "0x1b69822d4a96c489982412699f5d5313476b88eb",
+      "vest": 35,
+      "price": 8500,
+      "limit": 1680
+    },
+    {
+      "name": "Fantom Squad",
+      "address": "0xb680b9861f73B30d86BdC248376d9566ade3FD35",
+      "vest": 49,
+      "price": 9000,
+      "limit": 227
+    },
+    {
+      "name": "Nature Oracle",
+      "address": "0x600ea64f353085a0df6fba7335086951ee90f36f",
+      "vest": 42,
+      "price": 9500,
+      "limit": 1914
+    },
+    {
+      "name": "AUTOCOLOR Technica",
+      "address": "0xA20E5236B810790F87382D29F11c86C6b68c9b06",
+      "vest": 35,
+      "price": 9000,
+      "limit": 107
+    },
+    {
+      "name": "The Stonk Society",
+      "address": "0x2f604079aff2a11883736d189ef823e39abd6316",
+      "vest": 1,
+      "price": 12500,
+      "limit": 126
+    },
+    {
+      "name": "Defi Dinos",
+      "address": "0xe5d3dca3e8ef21f12bb8ed9eb613955dcc79449b",
+      "vest": 35,
+      "price": 9000,
+      "limit": 2200
+    },
+    {
+      "name": "Limbo Dinos",
+      "address": "0xa3ea1ca4f2d36d43fa240d359d9068701406f86e",
+      "vest": 42,
+      "price": 9500,
+      "limit": 7000
+    },
+    {
+      "name": "Phantom Bunch",
+      "address": "0x8e511aefa68af20634a19577d40ccf3c6504eaa3",
+      "vest": 56,
+      "price": 9000,
+      "limit": 963
+    },
+    {
+      "name": "NFTees",
+      "address": "0x903efda32f6d85ae074c1948c8d6b54f2421949f",
+      "vest": 14,
+      "price": 7500,
+      "limit": 3441
+    },
+    {
+      "name": "Zombie Society",
+      "address": "0x99571da737e351396df2d389ceaab13486a387ba",
+      "vest": 42,
+      "price": 9000,
+      "limit": 72
+    },
+    {
+      "name": "CT Zombies",
+      "address": "0xd29ce66c111d54182d431ee897e72e194776bf02",
+      "vest": 35,
+      "price": 8500,
+      "limit": 335
+    },
+    {
+      "name": "BitZombies",
+      "address": "0x6ffc7e19a8e004a3a32b3cff04834fdb03ee19db",
+      "vest": 35,
+      "price": 9000,
+      "limit": 360
+    },
+    {
+      "name": "69420 Frogs",
+      "address": "0x2d21b401e0ab6347165113dcf29997630163e59d",
+      "vest": 365,
+      "price": 9000,
+      "limit": 1002
+    },
+    {
+      "name": "Pumpkittens",
+      "address": "0xf185cf59c710a0e83362fb7b8813b633ba073600",
+      "vest": 42,
+      "price": 9500,
+      "limit": 1200
+    },
+    {
+      "name": "Foxes of the Opera",
+      "address": "0x93c7b19df2dea70c7fa3f355f079d6ed077998a7",
+      "vest": 180,
+      "price": 8500,
+      "limit": 186
+    },
+    {
+      "name": "Spook the Goose",
+      "address": "0xc7ac1dfafd242f9d916826c340f6d87fd9bd1559",
+      "vest": 122,
+      "price": 9000,
+      "limit": 762
+    },
+    {
+      "name": "Strange Brew",
+      "address": "0x9044948e1a934340766c16f094cC32205d60d1b2",
+      "vest": 69,
+      "price": 9000,
+      "limit": 500
+    },
+    {
+      "name": "Bit Snails",
+      "address": "0xE2a102Ff779f81aD3ba2B5D2577672d77550EF47",
+      "vest": 35,
+      "price": 8500,
+      "limit": 450
+    },
+    {
+      "name": "Anemale",
+      "address": "0xa81F0eD77003A2790e35314ee313061ABfFE32B1",
+      "vest": 25,
+      "price": 9500,
+      "limit": 245
+    },
+    {
+      "name": "Monster NFT",
+      "address": "0x2D2f7462197d4cfEB6491e254a16D3fb2d2030EE",
+      "vest": 70,
+      "price": 9500,
+      "limit": 40
+    },
+    {
+      "name": "Fant-O-Lanterns",
+      "address": "0xf7c2bcd69004c34e1302e1a5397ea8ae858ab385",
+      "vest": 42,
+      "price": 9000,
+      "limit": 114
+    },
+    {
+      "name": "Edwyn Time Traveller",
+      "address": "0x29A3e55d8577d73E6C7Df5fA4530b24E994aB0aa",
+      "vest": 25,
+      "price": 9000,
+      "limit": 500
+    },
+    {
+      "name": "Revenant Oath NFT",
+      "address": "0x39156f48eBF6F6Ed8b8Cf52ecE9C7438778d07d6",
+      "vest": 123,
+      "price": 7500,
+      "limit": 120
+    },
+    {
+      "name": "Pirate Party",
+      "address": "0xdD55EB1cF5Ea0B6387615BCD491A010B67C960dc",
+      "vest": 514,
+      "price": 6500,
+      "limit": 412
+    }
+  ]
+}

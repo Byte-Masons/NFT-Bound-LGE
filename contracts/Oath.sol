@@ -1,5 +1,18 @@
 // SPDX-License-Identifier: MIT
 
+/***
+ *     ▒█████   ▄▄▄      ▄▄▄█████▓ ██░ ██
+ *    ▒██▒  ██▒▒████▄    ▓  ██▒ ▓▒▓██░ ██▒
+ *    ▒██░  ██▒▒██  ▀█▄  ▒ ▓██░ ▒░▒██▀▀██░
+ *    ▒██   ██░░██▄▄▄▄██ ░ ▓██▓ ░ ░▓█ ░██
+ *    ░ ████▓▒░ ▓█   ▓██▒  ▒██▒ ░ ░▓█▒░██▓
+ *    ░ ▒░▒░▒░  ▒▒   ▓▒█░  ▒ ░░    ▒ ░░▒░▒
+ *      ░ ▒ ▒░   ▒   ▒▒ ░    ░     ▒ ░▒░ ░
+ *    ░ ░ ░ ▒    ░   ▒     ░       ░  ░░ ░
+ *        ░ ░        ░  ░          ░  ░  ░
+ *
+ */
+
 pragma solidity ^0.8.11;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
@@ -11,7 +24,16 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20Pe
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-contract Oath is Initializable, ERC20Upgradeable, ERC20SnapshotUpgradeable, ERC20CappedUpgradeable, AccessControlUpgradeable, PausableUpgradeable, ERC20PermitUpgradeable, UUPSUpgradeable {
+contract Oath is
+  Initializable,
+  ERC20Upgradeable,
+  ERC20SnapshotUpgradeable,
+  ERC20CappedUpgradeable,
+  AccessControlUpgradeable,
+  PausableUpgradeable,
+  ERC20PermitUpgradeable,
+  UUPSUpgradeable {
+
     bytes32 public constant SNAPSHOT_ROLE = keccak256("SNAPSHOT_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -22,7 +44,8 @@ contract Oath is Initializable, ERC20Upgradeable, ERC20SnapshotUpgradeable, ERC2
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
 
-    function initialize() initializer public {
+    // @param lge: granting minting rights to the Liquidity Generation Event contract for initial distribution
+    function initialize(address admin) initializer public {
         __ERC20_init("Oath Token", "OATH");
         __ERC20Snapshot_init();
         __ERC20Capped_init(MAX_SUPPLY);
@@ -31,12 +54,12 @@ contract Oath is Initializable, ERC20Upgradeable, ERC20SnapshotUpgradeable, ERC2
         __ERC20Permit_init("Oath Token");
         __UUPSUpgradeable_init();
 
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(SNAPSHOT_ROLE, msg.sender);
-        _grantRole(PAUSER_ROLE, msg.sender);
-        _grantRole(MINTER_ROLE, msg.sender);
-        _grantRole(UPGRADER_ROLE, msg.sender);
-        _grantRole(RESCUER_ROLE, msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
+        _grantRole(SNAPSHOT_ROLE, admin);
+        _grantRole(PAUSER_ROLE, admin);
+        _grantRole(MINTER_ROLE, admin);
+        _grantRole(UPGRADER_ROLE, admin);
+        _grantRole(RESCUER_ROLE, admin);
     }
 
     function snapshot() public onlyRole(SNAPSHOT_ROLE) {
