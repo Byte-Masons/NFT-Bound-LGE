@@ -16,7 +16,6 @@
 pragma solidity ^0.8.11;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20SnapshotUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20CappedUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
@@ -27,14 +26,12 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 contract Oath is
   Initializable,
   ERC20Upgradeable,
-  ERC20SnapshotUpgradeable,
   ERC20CappedUpgradeable,
   AccessControlUpgradeable,
   PausableUpgradeable,
   ERC20PermitUpgradeable,
   UUPSUpgradeable {
 
-    bytes32 public constant SNAPSHOT_ROLE = keccak256("SNAPSHOT_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -47,7 +44,6 @@ contract Oath is
     // @param lge: granting minting rights to the Liquidity Generation Event contract for initial distribution
     function initialize(address admin) initializer public {
         __ERC20_init("Oath Token", "OATH");
-        __ERC20Snapshot_init();
         __ERC20Capped_init(MAX_SUPPLY);
         __AccessControl_init();
         __Pausable_init();
@@ -55,15 +51,10 @@ contract Oath is
         __UUPSUpgradeable_init();
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
-        _grantRole(SNAPSHOT_ROLE, admin);
         _grantRole(PAUSER_ROLE, admin);
         _grantRole(MINTER_ROLE, admin);
         _grantRole(UPGRADER_ROLE, admin);
         _grantRole(RESCUER_ROLE, admin);
-    }
-
-    function snapshot() public onlyRole(SNAPSHOT_ROLE) {
-        _snapshot();
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
@@ -86,7 +77,7 @@ contract Oath is
     function _beforeTokenTransfer(address from, address to, uint256 amount)
         internal
         whenNotPaused
-        override(ERC20Upgradeable, ERC20SnapshotUpgradeable)
+        override(ERC20Upgradeable)
     {
         super._beforeTokenTransfer(from, to, amount);
     }

@@ -6,6 +6,7 @@ import "./OZ/utils/math/Math.sol";
 import "./OZ/token/ERC20/IERC20.sol";
 import "./OZ/access/Ownable.sol";
 import "./OZ/token/ERC721/IERC721.sol";
+import "./OZ/token/ERC20/utils/SafeERC20.sol";
 import "./TestERC20.sol";
 import "hardhat/console.sol";
 
@@ -19,6 +20,7 @@ interface IOath {
 
 contract ElasticLGE is Ownable {
   using Math for uint;
+  using SafeERC20 for IERC20;
 
   // defaultTerm:: vesting term for normal mode
   // ventureTerm:: vesting term for venture mode
@@ -89,7 +91,7 @@ contract ElasticLGE is Ownable {
     uint _beginning,
     uint _end
   ) {
-    require((_end - _beginning) <= 3 days, "LGE too long");
+    require((_end - _beginning) <= 5 days, "LGE too long");
     oath = IOath(_oath);
     counterAsset = IERC20(_counterAsset);
     totalOath = _totalOath;
@@ -132,7 +134,7 @@ contract ElasticLGE is Ownable {
       alloc.remaining -= amount;
     }
     uint cost = (amount * 1e18) * licenses[NFT].price / BASIS_POINTS;
-    counterAsset.transferFrom(msg.sender, multisig, cost);
+    counterAsset.safeTransferFrom(msg.sender, multisig, cost);
     _updateTerms(amount, licenses[NFT].term);
     shareSupply += amount;
     raised += cost;
@@ -146,7 +148,7 @@ contract ElasticLGE is Ownable {
     uint price = _venture ? venturePrice : defaultPrice;
     uint term = _venture ? ventureTerm : defaultTerm;
     uint cost = amount * price;
-    counterAsset.transferFrom(msg.sender, multisig, cost);
+    counterAsset.safeTransferFrom(msg.sender, multisig, cost);
     _updateTerms(amount, term);
     shareSupply += amount;
     raised += cost;
@@ -181,19 +183,17 @@ contract ElasticLGE is Ownable {
   // @dev used to issue Oath to users after the LGE, claims all unclaimed Oath from last claim to current
   function claim() external returns (bool) {
     require(block.timestamp >= end, "lge has not ended");
-    uint perSecond = _totalOwed() / terms[msg.sender].term;
+    uint _totalOwed = totalOath * terms[msg.sender].shares / shareSupply;
+    uint perSecond = _totalOwed / terms[msg.sender].term;
     uint secondsClaimed = claimed[msg.sender] / perSecond;
     uint lastClaim = end + secondsClaimed;
     uint owed = (block.timestamp - lastClaim) * perSecond;
+    if (claimed[msg.sender] + owed > _totalOwed) {
+      owed = _totalOwed - claimed[msg.sender];
+    }
     claimed[msg.sender] += owed;
-    require(claimed[msg.sender] <= _totalOwed(), "overflow");
     oath.mint(msg.sender, owed);
     return true;
-  }
-
-  // @dev save some operations
-  function _totalOwed() internal view returns (uint) {
-    return (totalOath * terms[msg.sender].shares / shareSupply);
   }
 
   struct BatchPricingData{
