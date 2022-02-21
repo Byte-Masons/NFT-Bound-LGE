@@ -20,7 +20,7 @@ contract OathERC721 is ERC721Enumerable {
     address admin;
     string uri;
 
-    constructor(string memory _uri) ERC721("Revenant OATH NFT", "RVNT-OATH") {
+    constructor(string memory _uri, string memory name, string memory symbol) ERC721(name, symbol) {
         admin = msg.sender;
         uri = _uri;
     }

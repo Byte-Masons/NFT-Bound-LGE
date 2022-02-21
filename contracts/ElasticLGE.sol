@@ -339,6 +339,7 @@ contract ElasticLGE is Ownable {
   }
 
   function upgradeOath(address newOath) public onlyOwner {
+    require(block.timestamp <= end, "LGE has ended");
     oath = IOath(newOath);
   }
 
