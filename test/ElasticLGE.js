@@ -70,6 +70,9 @@ describe("LGE", function () {
 
       async function logBalances() {
         let balanceFTM = await reaper.getUserBalance(self, ftm);
+        console.log("here1");
+        console.log("self", self);
+        console.log("oath", oath);
         let balanceOath = await reaper.getUserBalance(self, oath);
         console.log("ftm balance: " +balanceFTM.toString());
         console.log("oath balance: " +balanceOath.toString());
@@ -86,7 +89,7 @@ describe("LGE", function () {
       let self = await selfSigner.getAddress();
 
       console.log(self);
-      let env = await elastic.assembleEnvironment([selfSigner], 30, self);
+      let env = await elastic.assembleEnvironment([selfSigner], 60, self);
       await reaper.approveMax(env.lge.address, env.ftm.address);
 
       let zero = "0x0000000000000000000000000000000000000000";
@@ -99,7 +102,7 @@ describe("LGE", function () {
       console.log(lge);
       console.log(oath);
 
-      await env.lge.upgradeOath("0x0000000000000000000000000000000000000000");
+     // await env.lge.upgradeOath("0x0000000000000000000000000000000000000000");
 
       oath = await env.lge.oath();
 
@@ -119,7 +122,7 @@ describe("LGE", function () {
         [1, 2, 3, 1, 2, 3],
         true
       );
-      console.log(batchPricing);
+      console.log("Batch Pricing ",batchPricing);
 
       terms = await elastic.getBatchTerms(
         lge,
@@ -128,7 +131,7 @@ describe("LGE", function () {
         [1, 2, 3, 1, 2, 3],
         true
       );
-      console.log(terms);
+      console.log("terms", terms);
 
       await elastic.batchPurchase(
           lge,
@@ -137,11 +140,12 @@ describe("LGE", function () {
           [3, 4],
           true
       );
-
+      console.log("doing all these console.logs");
       await logTerms();
       await logState();
       await logBalances();
 
+      console.log("about to sleep and claim");
       reaper.sleep(30000);
 
       await elastic.claim(lge);

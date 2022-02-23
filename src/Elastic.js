@@ -1,7 +1,7 @@
 const tokens = require("../tokens.json");
 const reaper = require("./ReaperSDK.js");
 const nft = require("./supportedNFTs.json");
-const { upgrades } = require("hardhat");
+const { upgrades }  = require("hardhat");
 
 async function deployLGE(oath, counterAsset, totalOath, beginning, end) {
   let LGE = await ethers.getContractFactory("ElasticLGE");
@@ -130,16 +130,25 @@ async function assembleEnvironment(accounts, duration) {
     await reaper.mintTestToken(mockFTM.address, accounts[i].address, ethers.utils.parseEther("1000000"));
     reaper.sleep(10000);
   }
-  let mockOath = await reaper.deployTestToken("Oath", "OATH");
+  let oath = await deployOath(accounts[0].address);
+  console.log("Oath proxy address: " +oath.address);
+  reaper.sleep(10000);
   let lge = await deployLGE(
-    mockOath.address,
+    oath.address,
     mockFTM.address,
     ethers.utils.parseEther("80000000"),
     await reaper.getTimestamp(),
     await reaper.getTimestamp() + duration
   );
+  reaper.sleep(10000);
+  let minter = await oath.MINTER_ROLE();
+  let tx = await oath.grantRole(minter, lge.address);
+  //await tx.wait();
+  reaper.sleep(10000);
+  console.log("lge address: " +lge.address);
+
   return {
-    "oath": mockOath,
+    "oath": oath,
     "ftm": mockFTM,
     "enft": enft,
     "lnft": lnft,

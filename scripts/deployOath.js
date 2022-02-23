@@ -9,7 +9,8 @@ async function main() {
   );
   reaper.sleep(30000);
 */
-  await elastic.addLicenses("0x96662f375a9734654cB57BbFeb31Db9dD7784A7F");
+ let oath = await elastic.deployOath("0x111731A388743a75CF60CCA7b140C58e41D83635");
+ console.log(oath.address);
 
 
   //let Oath = await oath.createContractFactory()
